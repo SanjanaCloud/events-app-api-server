@@ -5,12 +5,12 @@
 //      https://github.com/SanjanaCloud/events-app-api-server.git
 //      main
 //      dtc092021-216
-//      [IMAGE_NAME]
-//      [CLUSTER_NAME] 
-//      [ZONE]
+//      api-server-image
+//      cluster-kubernetesbasics 
+//      us-central1-c
 //      the following values can be found in the yaml:
-//      [DEPLOYMENT_NAME]
-//      [CONTAINER_NAME] (in the template/spec section of the deployment)
+//      demo-api
+//      demo-api (in the template/spec section of the deployment)
 
 pipeline {
     agent any 
@@ -29,7 +29,7 @@ pipeline {
                 echo 'workspace and versions' 
                 sh 'echo $WORKSPACE'
                 sh 'gcloud version'
-                sh 'nodejs -v'
+                sh 'node -v'
                 sh 'npm -v'
         
             }
@@ -50,16 +50,16 @@ pipeline {
             steps {
                 echo "build id = ${env.BUILD_ID}"
                 echo 'Tests passed on to build Docker container'
-                sh "gcloud builds submit -t gcr.io/dtc092021-216/[IMAGE_NAME]:v2.${env.BUILD_ID} ."
+                sh "gcloud builds submit -t gcr.io/dtc092021-216/api-server-image:v2.${env.BUILD_ID} ."
             }
         }        
          stage('Stage 5') {
             steps {
                 echo 'Get cluster credentials'
-                sh 'gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE] --project dtc092021-216'
+                sh 'gcloud container clusters get-credentials cluster-kubernetesbasics --zone us-central1-c --project dtc092021-216'
                 echo 'Update the image'
-                echo "gcr.io/dtc092021-216/[IMAGE_NAME]:2.${env.BUILD_ID}"
-                sh "kubectl set image deployment/[DEPLOYMENT_NAME] [CONTAINER_NAME]=gcr.io/dtc092021-216/[IMAGE_NAME]:v2.${env.BUILD_ID} --record"
+                echo "gcr.io/dtc092021-216/api-server-image:2.${env.BUILD_ID}"
+                sh "kubectl set image deployment/demo-api demo-api=gcr.io/dtc092021-216/api-server-image:v2.${env.BUILD_ID} --record"
             }
         }
     }
